@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rdf:RDF [
+    <!ENTITY rdf  "http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#">
+    <!ENTITY owl  "http://www.w3.org/2002/07/owl#">
+    <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#">
+    <!ENTITY dc   "http://purl.org/dc/elements/1.1/">
+    <!ENTITY dcterms "http://purl.org/dc/terms/">
+    <!ENTITY foaf "http://xmlns.com/foaf/0.1/">
+    <!ENTITY bibo "http://purl.org/ontology/bibo/">
+]>
+
+<rdf:RDF
+    xmlns:rdf     ="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs    ="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl     ="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd     ="http://www.w3.org/2001/XMLSchema#"
+    xmlns:dc      ="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms ="http://purl.org/dc/terms/"
+    xmlns:foaf    ="http://xmlns.com/foaf/0.1/"
+    xmlns:bibo    ="http://purl.org/ontology/bibo/"
+    xml:base      ="https://liboyang88.github.io/cnki-ontology#">
+
+    <!-- ============================================================ -->
+    <!-- CNKI 文献本体 (CNKI Literature Ontology) -->
+    <!-- 复用: Dublin Core, DCMI Terms, FOAF, BIBO -->
+    <!-- ============================================================ -->
+
+    <!-- ===== 本体元数据 ===== -->
+    <owl:Ontology rdf:about="https://liboyang88.github.io/cnki-ontology">
+        <rdfs:label xml:lang="zh">CNKI文献本体</rdfs:label>
+        <rdfs:label xml:lang="en">CNKI Literature Ontology</rdfs:label>
+        <rdfs:comment xml:lang="zh">针对CNKI文献的元数据本体，复用Dublin Core、FOAF、BIBO</rdfs:comment>
+        <owl:versionInfo>1.0</owl:versionInfo>
+        <dc:creator>liboyang88</dc:creator>
+    </owl:Ontology>
+
+
+    <!-- ============================================================ -->
+    <!-- 一、类定义 -->
+    <!-- ============================================================ -->
+
+    <!-- 文献类 等价复用bibo:AcademicArticle -->
+    <owl:Class rdf:about="#Article">
+        <rdfs:label xml:lang="zh">论文</rdfs:label>
+        <rdfs:comment xml:lang="zh">一篇CNKI文献</rdfs:comment>
+        <owl:equivalentClass rdf:resource="&bibo;AcademicArticle"/>
+    </owl:Class>
+
+    <!-- 作者类 属于foaf:Person -->
+    <owl:Class rdf:about="#Author">
+        <rdfs:label xml:lang="zh">作者</rdfs:label>
+        <rdfs:comment xml:lang="zh">论文作者，是人的子集</rdfs:comment>
+        <rdfs:subClassOf rdf:resource="&foaf;Person"/>
+    </owl:Class>
+
+    <!-- 学术机构类 属于foaf:Organization -->
+    <owl:Class rdf:about="#AcademicOrganization">
+        <rdfs:label xml:lang="zh">学术机构</rdfs:label>
+        <rdfs:comment xml:lang="zh">作者所属学术机构，是组织的子集</rdfs:comment>
+        <rdfs:subClassOf rdf:resource="&foaf;Organization"/>
+    </owl:Class>
+
+    <!-- 期刊类 等价bibo:Journal -->
+    <owl:Class rdf:about="#Journal">
+        <rdfs:label xml:lang="zh">期刊</rdfs:label>
+        <rdfs:comment xml:lang="zh">论文发表的期刊</rdfs:comment>
+        <owl:equivalentClass rdf:resource="&bibo;Journal"/>
+    </owl:Class>
+
+    <!-- 关键词类 无复用 -->
+    <owl:Class rdf:about="#Keyword">
+        <rdfs:label xml:lang="zh">关键词</rdfs:label>
+        <rdfs:comment xml:lang="zh">论文关键词，独立为类以支持语义查询</rdfs:comment>
+    </owl:Class>
+
+
+    <!-- ============================================================
+    二、对象属性 — 复用 DC
+
+    dc:title → Article → Title标题
+    dc:creator   → Article → Author
+    dc:publisher → Article → AcademicOrganization
+    dc:source    → Article → Journal                           
+    dc:subject   → Article → Keyword
+    dc:identifier → Article → DOI
+    dcterms:abstract → Article → Abstract摘要
+    dcterms:issued → Article → DatePublished
+    dcterms:reference → Article → CNKI官方链接URI
+    ============================================================ -->
+
+
+    <!-- ============================================================
+    三、数据属性 — CNKI 特有                                      
+    ============================================================ -->
+
+    <!-- :myId — 内部序号 -->
+    <owl:DatatypeProperty rdf:about="#myId">
+        <rdfs:label xml:lang="zh">序号</rdfs:label>
+        <rdfs:comment xml:lang="zh">内部序号</rdfs:comment>
+        <rdfs:domain rdf:resource="#Article"/>
+        <rdfs:range  rdf:resource="&xsd;integer"/>
+    </owl:DatatypeProperty>
+
+    <!-- :srcDatabase — 来源库 -->
+    <owl:DatatypeProperty rdf:about="#srcDatabase">
+        <rdfs:label xml:lang="zh">来源库</rdfs:label>
+        <rdfs:comment xml:lang="zh">CNKI来源库类型，如：期刊、硕士、博士</rdfs:comment>
+        <rdfs:domain rdf:resource="#Article"/>
+        <rdfs:range  rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- ============================================================
+    四、约束
+    ============================================================ -->
+
+    <owl:Class rdf:about="#Article">
+        <!-- 每篇论文至少有 1 个标题 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dc;title"/>
+                <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文至少有 1 个作者 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dc;creator"/>
+                <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文至少有 1 个学术机构 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dc;publisher"/>
+                <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文至少有 1 个关键词 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dc;subject"/>
+                <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文最多有 1 个DOI（部分文献没有DOI） -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dc;identifier"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文最多 1 个来源期刊 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dc;source"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文有且只有 1 个发表日期 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dcterms;issued"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文最多 1 个知网链接 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&dcterms;references"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文有且只有 1 个来源库 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#srcDatabase"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <!-- 每篇论文有且只有 1 个内部序号 -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#myId"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+</rdf:RDF>
