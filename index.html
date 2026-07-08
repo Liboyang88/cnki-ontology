@@ -1,13 +1,437 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>CNKI Literature Ontology</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNKI 文献本体 — CNKI Literature Ontology</title>
+    <style>
+        :root {
+            --primary: #1a5276;
+            --primary-light: #2980b9;
+            --accent: #c0392b;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --text-light: #5a6c7d;
+            --border: #e0e4e8;
+            --code-bg: #f0f3f5;
+            --tag-dc: #27ae60;
+            --tag-foaf: #8e44ad;
+            --tag-bibo: #d35400;
+            --tag-custom: #2980b9;
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #1a6e4a 100%);
+            color: #fff;
+            padding: 70px 24px 60px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            opacity: 0.85;
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+        .hero .ns {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+            font-size: 0.95rem;
+            letter-spacing: 0.03em;
+            word-break: break-all;
+        }
+        .hero .ns code {
+            background: none;
+            color: #fff;
+        }
+
+        /* ── Container ── */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ── Section ── */
+        section {
+            margin: 48px 0;
+        }
+        section h2 {
+            font-size: 1.45rem;
+            color: var(--primary);
+            border-left: 4px solid var(--primary-light);
+            padding-left: 14px;
+            margin-bottom: 18px;
+        }
+        section h3 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin: 22px 0 10px;
+        }
+        section p {
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        /* ── Class Grid ── */
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .class-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .class-card .class-name {
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .class-card .class-relation {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        .class-card .class-desc {
+            font-size: 0.88rem;
+            color: #7f8c8d;
+        }
+
+        /* ── Property Table ── */
+        .prop-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+        .prop-table th {
+            background: #eaf2f8;
+            color: var(--primary);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        .prop-table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-light);
+        }
+        .prop-table code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+        .prop-table tr:hover td {
+            background: #fafbfc;
+        }
+
+        /* ── Tags ── */
+        .tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+        .tag-dc { background: #e8f8f0; color: var(--tag-dc); }
+        .tag-foaf { background: #f3eafa; color: var(--tag-foaf); }
+        .tag-bibo { background: #fef5e7; color: var(--tag-bibo); }
+        .tag-custom { background: #eaf2f8; color: var(--tag-custom); }
+
+        /* ── Buttons ── */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-outline {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-outline:hover { background: #eaf2f8; }
+        .btn svg {
+            width: 18px; height: 18px;
+        }
+
+        /* ── Code block ── */
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            overflow-x: auto;
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+        pre .kw { color: #c792ea; }
+        pre .uri { color: #82aaff; }
+        pre .str { color: #c3e88d; }
+        pre .cmt { color: #546e7a; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.85rem;
+            padding: 40px 24px;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+        footer a { color: var(--primary-light); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero .subtitle { font-size: 1rem; }
+            .class-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<header class="hero">
     <h1>CNKI 数字人文文献本体</h1>
-    <p>命名空间：<code>https://Liboyang88.github.io/cnki-ontology#</code></p>
-    <p>本体文件：<a href="ontology.owl">ontology.owl</a></p>
-    <p>示例数据：<a href="examples/articles.ttl">articles.ttl</a></p>
+    <p class="subtitle">CNKI Literature Ontology for Digital Humanities</p>
+    <div class="ns">
+        <code>https://liboyang88.github.io/cnki-ontology#</code>
+    </div>
+</header>
+
+<div class="container">
+
+<!-- ═══════════════════ 概述 ═══════════════════ -->
+<section>
+    <h2>概述</h2>
+    <p>
+        本本体针对<b>CNKI（中国知网）数字人文主题期刊论文</b>的元数据描述需求设计。核心设计理念为<b>复用优先</b>——在
+        <span class="tag tag-dc">Dublin Core</span>
+        <span class="tag tag-foaf">FOAF</span>
+        <span class="tag tag-bibo">BIBO</span>
+        等成熟词汇表的基础上，仅定义极少量的自定义元素，兼顾标准化互操作性与 CNKI 数据的特殊性。
+    </p>
+    <p>
+        本体可描述 <b>100 篇数字人文期刊论文</b>及其作者、期刊、学术机构、关键词等实体，支持 Turtle、RDF/XML、JSON-LD 三种序列化格式。
+        实例数据通过 Go + GORM 从 MySQL 数据库以编程式 D2RDF 方式生成。
+    </p>
+    <div class="btn-group">
+        <a href="https://liboyang88.github.io/cnki-ontology/ontology.owl" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            下载本体 (OWL)
+        </a>
+        <a href="https://liboyang88.github.io/cnki-ontology/output/output_ttl.ttl" class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            下载实例数据 (Turtle)
+        </a>
+        <a href="https://github.com/Liboyang88/cnki-ontology" class="btn btn-outline" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub 仓库
+        </a>
+    </div>
+</section>
+
+<!-- ═══════════════════ 类 ═══════════════════ -->
+<section>
+    <h2>类层次结构</h2>
+    <p>本体定义了 5 个类。其中 Article 与 Journal 与 BIBO 等价，Author 与 AcademicOrganization 是 FOAF 的子集。</p>
+
+    <div class="class-grid">
+        <div class="class-card">
+            <div class="class-name">:Article</div>
+            <div class="class-relation">≡ <span style="color:#d35400">bibo:AcademicArticle</span></div>
+            <div class="class-desc">核心类 — 一篇 CNKI 期刊论文</div>
+        </div>
+        <div class="class-card">
+            <div class="class-name">:Author</div>
+            <div class="class-relation">⊂ <span style="color:#8e44ad">foaf:Person</span></div>
+            <div class="class-desc">论文作者（人的子集）</div>
+        </div>
+        <div class="class-card">
+            <div class="class-name">:AcademicOrganization</div>
+            <div class="class-relation">⊂ <span style="color:#8e44ad">foaf:Organization</span></div>
+            <div class="class-desc">作者所属学术机构</div>
+        </div>
+        <div class="class-card">
+            <div class="class-name">:Journal</div>
+            <div class="class-relation">≡ <span style="color:#d35400">bibo:Journal</span></div>
+            <div class="class-desc">论文发表期刊</div>
+        </div>
+        <div class="class-card">
+            <div class="class-name">:Keyword</div>
+            <div class="class-relation">独立类，无父类</div>
+            <div class="class-desc">论文关键词，独立定义以支持语义查询</div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════ 属性 ═══════════════════ -->
+<section>
+    <h2>属性设计</h2>
+
+    <h3>对象属性（复用 Dublin Core）</h3>
+    <table class="prop-table">
+        <thead>
+            <tr><th>属性</th><th>定义域 → 值域</th><th>语义</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>dc:creator</code></td><td>:Article → :Author</td><td>论文创作者</td></tr>
+            <tr><td><code>dc:publisher</code></td><td>:Article → :AcademicOrganization</td><td>作者所属机构</td></tr>
+            <tr><td><code>dc:source</code></td><td>:Article → :Journal</td><td>来源期刊</td></tr>
+            <tr><td><code>dc:subject</code></td><td>:Article → :Keyword</td><td>主题关键词</td></tr>
+        </tbody>
+    </table>
+
+    <h3>数据属性</h3>
+    <table class="prop-table">
+        <thead>
+            <tr><th>属性</th><th>来源</th><th>类型</th><th>基数</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>dc:title</code></td><td><span class="tag tag-dc">DC</span></td><td>rdfs:Literal</td><td>≥1</td><td>论文题名</td></tr>
+            <tr><td><code>dcterms:abstract</code></td><td><span class="tag tag-dc">DCTerms</span></td><td>rdfs:Literal</td><td>—</td><td>摘要</td></tr>
+            <tr><td><code>dcterms:issued</code></td><td><span class="tag tag-dc">DCTerms</span></td><td>xsd:date</td><td>=1</td><td>发表时间</td></tr>
+            <tr><td><code>dc:identifier</code></td><td><span class="tag tag-dc">DC</span></td><td>rdfs:Literal</td><td>≤1</td><td>DOI（可选）</td></tr>
+            <tr><td><code>dcterms:references</code></td><td><span class="tag tag-dc">DCTerms</span></td><td>rdfs:Literal</td><td>≤1</td><td>CNKI原文链接</td></tr>
+            <tr><td><code>:myId</code></td><td><span class="tag tag-custom">自定义</span></td><td>xsd:integer</td><td>=1</td><td>内部序号</td></tr>
+            <tr><td><code>:srcDatabase</code></td><td><span class="tag tag-custom">自定义</span></td><td>xsd:string</td><td>=1</td><td>CNKI来源库类型</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ═══════════════════ 使用 ═══════════════════ -->
+<section>
+    <h2>命名空间与使用</h2>
+
+    <div class="card">
+        <h3>命名空间前缀</h3>
+        <pre><span class="cmt"># 在 Turtle 中使用</span>
+<span class="kw">@prefix</span> <span class="uri">:</span> &lt;https://liboyang88.github.io/cnki-ontology#&gt; .
+
+<span class="cmt"># 实例 URI 模式</span>
+<span class="uri">:article/1</span>  a <span class="uri">:Article</span> .
+<span class="uri">:author/5</span>   a <span class="uri">:Author</span> .
+<span class="uri">:journal/1</span>  a <span class="uri">:Journal</span> .</pre>
+    </div>
+
+    <div class="card">
+        <h3>实例示例</h3>
+        <pre><span class="uri">:article/1</span> a <span class="uri">:Article</span> ;
+    <span class="kw">:myId</span>     <span class="str">"1"</span>^^xsd:integer ;
+    <span class="kw">:srcDatabase</span> <span class="str">"期刊"</span>@zh ;
+    <span class="kw">dc:title</span>   <span class="str">"融入与共生：ChatGPT在数字人文中的风险应对与前景展望"</span>@zh ;
+    <span class="kw">dc:creator</span> <span class="uri">:author/1</span>, <span class="uri">:author/2</span> ;
+    <span class="kw">dc:subject</span> <span class="uri">:keyword/1</span>, <span class="uri">:keyword/2</span>, <span class="uri">:keyword/3</span> ;
+    <span class="kw">dc:source</span>  <span class="uri">:journal/1</span> ;
+    <span class="kw">dcterms:issued</span> <span class="str">"2024-05-29"</span>^^xsd:date .</pre>
+    </div>
+</section>
+
+<!-- ═══════════════════ 技术栈 ═══════════════════ -->
+<section>
+    <h2>技术实现</h2>
+    <div class="card">
+        <table class="prop-table">
+            <thead>
+                <tr><th>环节</th><th>技术选型</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>数据解析</td><td>Go · golang.org/x/net/html</td></tr>
+                <tr><td>数据库</td><td>MySQL 8 · GORM (Go ORM)</td></tr>
+                <tr><td>本体建模</td><td>OWL 2 · 复用 DC / FOAF / BIBO</td></tr>
+                <tr><td>D2RDF</td><td>Go 编程式生成 · strings.Builder</td></tr>
+                <tr><td>输出格式</td><td>Turtle · RDF/XML · JSON-LD</td></tr>
+                <tr><td>托管发布</td><td>GitHub Pages · 命名空间可解析</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+</div>
+
+<footer>
+    <p>
+        CNKI Literature Ontology v1.0 ·
+        Maintained by <a href="https://github.com/Liboyang88" target="_blank" rel="noopener">@Liboyang88</a> ·
+        Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT</a>
+    </p>
+    <p style="margin-top:8px;">
+        <code style="font-size:0.85rem;">https://liboyang88.github.io/cnki-ontology#</code>
+    </p>
+</footer>
+
 </body>
 </html>
