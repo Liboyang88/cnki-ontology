@@ -1,0 +1,91 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix bibo:  <http://purl.org/ontology/bibo/> .
+@prefix :      <https://liboyang88.github.io/cnki-ontology#> .
+
+# ============================================================
+# CNKI 文献本体 (CNKI Literature Ontology)
+# 复用: Dublin Core, DCMI Terms, FOAF, BIBO 
+# ============================================================
+
+<https://liboyang88.github.io/cnki-ontology>
+    a owl:Ontology ;
+    rdfs:label "CNKI文献本体"@zh ;
+    rdfs:label "CNKI Literature Ontology"@en ;
+    rdfs:comment "针对CNKI文献的元数据本体，复用Dublin Core、FOAF、BIBO"@zh ;
+    owl:versionInfo "1.0" ;
+    dc:creator "liboyang88" .
+
+# ============================================================
+# 一、类定义
+# ============================================================
+
+:Article a owl:Class ;
+    rdfs:label "论文"@zh ;
+    rdfs:comment "一篇CNKI文献"@zh ;
+    owl:equivalentClass bibo:AcademicArticle .
+
+:Author a owl:Class ;
+    rdfs:label "作者"@zh ;
+    rdfs:comment "论文作者，是（foaf）人的子集"@zh ;
+    rdfs:subClassOf foaf:Person .
+
+:AcademicOrganization a owl:Class ;
+    rdfs:label "学术机构"@zh ;
+    rdfs:comment "作者所属学术机构，是（foaf）组织的子集"@zh ;
+    rdfs:subClassOf foaf:Organization .
+
+:Journal a owl:Class ;
+    rdfs:label "期刊"@zh ;
+    rdfs:comment "论文发表的期刊"@zh ;
+    owl:equivalentClass bibo:Journal .
+
+:Keyword a owl:Class ;
+    rdfs:label "关键词"@zh ;
+    rdfs:comment "论文关键词，独立为类以支持语义查询"@zh .
+
+# ============================================================
+# 二、对象属性 — 复用 DC
+# ============================================================
+
+# dc:creator   → :Article → :Author
+# dc:publisher → :Article → :AcademicOrganization
+# dc:source    → :Article → :Journal
+# dc:subject   → :Article → :Keyword
+
+# ============================================================
+# 三、数据属性 — 自定义属性
+# ============================================================
+
+:myId a owl:DatatypeProperty ;
+    rdfs:label "序号"@zh ;
+    rdfs:comment "内部序号"@zh ;
+    rdfs:domain :Article ;
+    rdfs:range xsd:integer .
+
+:srcDatabase a owl:DatatypeProperty ;
+    rdfs:label "来源库"@zh ;
+    rdfs:comment "CNKI来源库类型，如：期刊、硕士、博士"@zh ;
+    rdfs:domain :Article ;
+    rdfs:range xsd:string .
+
+# ============================================================
+# 四、约束
+# ============================================================
+
+:Article rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty dc:title ;       owl:minCardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dc:creator ;     owl:minCardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dc:publisher ;   owl:minCardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dc:subject ;     owl:minCardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dcterms:issued ; owl:cardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty :myId ;          owl:cardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty :srcDatabase ;   owl:cardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dc:identifier ;       owl:maxCardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dc:source ;           owl:maxCardinality 1 ],
+    [ a owl:Restriction ; owl:onProperty dcterms:references ;  owl:maxCardinality 1 ] .
